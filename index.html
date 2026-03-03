@@ -2,24 +2,12 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>시니어 키오스크 체험</title>
-    <link href="https://fonts.googleapis.com/css2?family=Ms+Madi&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시니어 키오스크 체험 - 모바일 최적화</title>
     <style>
-        /* 기본 설정 (모바일 브라우저 하단바 가림 방지를 위해 100dvh 사용 및 안전 영역 확보) */
-        body { 
-            font-family: 'Malgun Gothic', sans-serif; 
-            margin: 0; 
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-            background-color: #f4f4f9; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            height: 100dvh; 
-            overflow: hidden; 
-        }
-        .app-container { width: 100%; max-width: 600px; height: 100%; background: white; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        /* 기본 설정 (모바일 브라우저 하단바 가림 방지를 위해 100dvh 사용) */
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
+        .app-container { width: 100%; max-width: 600px; height: 100vh; height: 100dvh; background: white; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         
         /* 상단 토글 바 */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #333; color: white; z-index: 100; }
@@ -34,7 +22,7 @@
         input:checked + .slider:before { transform: translateX(26px); }
 
         /* 공통 컨테이너 */
-        .screen { display: none; padding: 20px; flex-direction: column; flex-grow: 1; overflow-y: auto; position: relative; padding-bottom: 150px; } /* 하단 장바구니 영역 확보 */
+        .screen { display: none; padding: 20px; flex-direction: column; flex-grow: 1; overflow-y: auto; position: relative; padding-bottom: 120px; }
         .screen.active { display: flex; }
         
         /* [기본 상태: 도움 OFF] */
@@ -72,94 +60,49 @@
         .tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: #ffca28 transparent transparent transparent; }
         @keyframes floatUpDown { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
 
-        /* 장바구니 (하단 고정) */
-        .cart-container { position: absolute; left: 0; width: 100%; background: #fff; border-top: 2px solid #ddd; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); display: none; flex-direction: column; z-index: 50; }
-        .help-mode .cart-container { padding: 20px; box-sizing: border-box; position: relative; bottom: 0; } /* 도움 ON: 기본 하단 부착 */
+        /* =========================================
+           장바구니 (모바일 클릭 불가 방지)
+           ========================================= */
+        .cart-container { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 2px solid #ddd; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); display: none; flex-direction: column; z-index: 50; }
+        
+        .help-mode .cart-container { padding: 20px; box-sizing: border-box; position: relative;}
         .help-mode .cart-info { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #333; }
         .help-mode .cart-buttons { display: flex; gap: 10px; }
         .help-mode .cart-reset-btn { flex: 1; padding: 20px; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; }
         .help-mode .cart-checkout-btn { flex: 2; padding: 20px; background: #ff5722; color: white; border: none; border-radius: 10px; font-size: 24px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; position: relative;}
         
-        /* 도움 OFF 장바구니 - 모바일 하단바 가림 방지 (안전 영역 + 50px 위로) */
+        /* 도움 OFF일 때의 장바구니 - 화면 중앙으로 대폭 끌어올림! */
         .cart-container.unfriendly { 
-            bottom: calc(env(safe-area-inset-bottom) + 50px); 
-            left: 5%; 
-            width: 90%; 
-            box-sizing: border-box;
+            bottom: 30%; 
+            left: 10%; 
+            width: 80%; 
             border-radius: 10px; 
-            padding: 15px 20px; 
+            padding: 10px 15px; 
             flex-direction: row; 
             justify-content: space-between; 
             align-items: center; 
             background: #333; 
             color: white; 
             font-size: 14px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
-        .cart-container.unfriendly .cart-checkout-btn { padding: 10px 15px; background: red; color: white; border: none; font-size: 14px; border-radius: 5px; cursor: pointer; }
+        .cart-container.unfriendly .cart-checkout-btn { padding: 10px 15px; background: red; color: white; border: none; font-size: 14px; border-radius: 5px; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        /* =========================================
-           할인 적용 화면 (비디오 영역 이원화)
-           ========================================= */
-        #step-discount { justify-content: center; align-items: center; text-align: center; } 
-        
-        /* 도움 ON - 친절한 카메라 */
+        /* 가상 카메라 (화면 가림) */
+        #step-discount { justify-content: center; align-items: center; text-align: center; } /* 중앙 정렬로 변경 */
+        #step-discount .scan-unfriendly { font-size: 11px; color: #aaa; text-align: left; line-height: 1.6; }
+        #step-discount .btn-unfriendly-scan { border: 1px solid #ccc; background: #eee; padding: 10px 20px; font-size: 11px; color: #999; margin-top: 20px;}
         #step-discount .scan-friendly-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
         .help-mode #step-discount .scan-friendly-container { display: flex; }
-        #reader-container-friendly { width: 100%; max-width: 350px; height: 300px; margin: 0 auto; border: 8px solid #4CAF50; border-radius: 15px; overflow: hidden; background: #000; position: relative; }
-        
-        /* 도움 OFF - 불친절한 카메라 */
-        #step-discount .scan-unfriendly-container { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; position: relative; margin-top: 30px; }
-        .help-mode #step-discount .scan-unfriendly-container { display: none; }
-        
-        /* 악의적으로 렌더링된 비디오 컨테이너 */
-        #reader-container-unfriendly { 
-            width: 150px; 
-            height: 150px; 
-            border: 2px solid #555; 
-            overflow: hidden; 
-            background: #000; 
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-        }
-
-        /* 공통 비디오 스타일 */
-        .camera-video { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* [핵심] 불친절 모드 비디오 왜곡 필터 */
-        .help-off-filter { 
-            filter: sepia(0.8) hue-rotate(180deg) contrast(1.5) blur(1.5px); /* 화면 왜곡 */
-            opacity: 0.7;
-        }
-        
-        /* 불친절 모드 지시 사항 */
-        .scan-instr-unfriendly { 
-            font-family: 'Ms Madi', cursive; /* 흘림체 */
-            font-size: 14px; 
-            color: #9e9e9e; 
-            text-align: center; 
-            line-height: 1.2;
-            width: 80%;
-            margin-top: 10px;
-        }
-
-        /* 헷갈리는 가이드 라인 */
-        .scan-line-bad { 
-            width: 120%; height: 120%; 
-            border: 3px dashed #ff80ab; 
-            position: absolute; top: -10%; left: -10%; 
-            transform: rotate(20deg); 
-            pointer-events: none; 
-        }
-
-        /* 도움 ON 스캔 라인 애니메이션 */
-        .scan-line-good { width: 100%; height: 3px; background: red; position: absolute; top: 50%; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite linear; pointer-events: none; }
+        .help-mode #step-discount .scan-unfriendly, .help-mode #step-discount .btn-unfriendly-scan { display: none; }
+        #reader-container { width: 100%; max-width: 350px; height: 300px; margin: 0 auto; border: 8px solid #4CAF50; border-radius: 15px; overflow: hidden; background: #000; position: relative; }
+        #camera-video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-line { width: 100%; height: 3px; background: red; position: absolute; top: 50%; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite linear; pointer-events: none; }
         @keyframes scanAnim { 0% { top: 5%; } 50% { top: 95%; } 100% { top: 5%; } }
-        
-        /* 마스터키 */
         .cheat-btn { position: absolute; bottom: 0; right: 0; width: 80px; height: 80px; background: transparent; border: none; z-index: 10; cursor: pointer; }
+        .scan-instr-friendly { font-size: 20px; font-weight: bold; color: #333; line-height: 1.4; margin-top: 10px; }
 
         /* 미션 화면 */
         #step-mission { justify-content: center; align-items: center; background: #e3f2fd; }
@@ -167,7 +110,7 @@
         .mission-title { font-size: 28px; font-weight: bold; color: #1976D2; margin-bottom: 20px; }
         .mission-desc { font-size: 22px; line-height: 1.6; color: #333; font-weight: bold; text-align: left; background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 30px;}
         .mission-start-btn { background: #ff9800; color: white; border: none; padding: 20px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,152,0,0.4); transition: 0.2s; animation: pulse 2s infinite; width: 100%;}
-        .mission-start-btn:disabled { background: #ccc; box-shadow: none; animation: none; cursor: not-allowed; }
+        .mission-start-btn:disabled { background: #ccc; box-shadow: none; animation: none; }
 
         /* 결과 화면 */
         #step-success { justify-content: flex-start; align-items: center; background-color: #f4f4f9; padding-top: 50px; }
@@ -201,15 +144,32 @@
 
     <div id="step-menu" class="screen">
         <div class="header friendly-ui">어떤 음료를 드시겠어요?</div>
-        <div class="header unfriendly-ui">Select beverage.</div>
+        <div class="header unfriendly-ui">Select your beverage.</div>
+        
         <div class="btn-grid">
             <button class="action-btn" onclick="addToCart('따뜻한 아메리카노', 2000)">
-                <div class="friendly-ui"><span>☕ 따뜻한 아메리카노</span><span>2,000원</span></div>
-                <div class="unfriendly-ui">HOT<br>Americano</div>
+                <div class="friendly-ui">
+                    <div class="tooltip">단맛이 없는 따뜻한 블랙커피예요</div>
+                    <span>☕ 따뜻한 아메리카노</span>
+                    <span>2,000원 담기</span>
+                </div>
+                <div class="unfriendly-ui">HOT<br>Americano<br>2.0</div>
             </button>
             <button class="action-btn" onclick="addToCart('시원한 아메리카노', 2000)">
-                <div class="friendly-ui"><span>🧊 시원한 아메리카노</span><span>2,000원</span></div>
-                <div class="unfriendly-ui">ICED<br>Americano</div>
+                <div class="friendly-ui">
+                    <div class="tooltip" style="animation-delay: 0.2s;">얼음이 들어간 시원한 커피예요</div>
+                    <span>🧊 시원한 아메리카노</span>
+                    <span>2,000원 담기</span>
+                </div>
+                <div class="unfriendly-ui">ICED<br>Americano<br>2.0</div>
+            </button>
+            <button class="action-btn" onclick="addToCart('부드러운 카페라떼', 3000)">
+                <div class="friendly-ui">
+                    <div class="tooltip" style="animation-delay: 0.4s;">우유가 들어가 고소해요</div>
+                    <span>🥛 부드러운 카페라떼</span>
+                    <span>3,000원 담기</span>
+                </div>
+                <div class="unfriendly-ui">Cafe Latte<br>3.0</div>
             </button>
         </div>
     </div>
@@ -222,50 +182,65 @@
             </div>
             <div class="cart-buttons">
                 <button class="cart-reset-btn" onclick="resetCart()">전체 취소</button>
-                <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">주문 및 할인 적용</button>
+                <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">
+                    <div class="tooltip">할인 쿠폰이 있다면 찍어보세요</div>
+                    주문 및 할인 적용
+                </button>
             </div>
         </div>
         <div class="unfriendly-ui">
             <span id="cart-mini-text">Cart(0) $0.0</span>
-            <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">Checkout</button>
+            <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">Discount</button>
         </div>
     </div>
 
     <div id="step-discount" class="screen">
         <div class="header friendly-ui">할인 쿠폰이 있으신가요?</div>
-        <div class="header unfriendly-ui" style="margin-bottom: 0;">Promo/Barcode</div>
+        <div class="header unfriendly-ui">Apply Discount Barcode</div>
         
         <div class="scan-friendly-container">
-            <div id="reader-container-friendly">
-                <video id="camera-video-friendly" class="camera-video" autoplay playsinline></video>
-                <div class="scan-line-good"></div>
+            <div id="reader-container">
+                <video id="camera-video" autoplay playsinline></video>
+                <div class="scan-line"></div>
                 <button class="cheat-btn" onclick="applyDiscount()"></button>
             </div>
-            <div class="scan-instr-friendly">쿠폰을 카메라 렌즈에 <b>바짝</b> 갖다 대세요.</div>
-            <button class="option-btn" style="padding: 20px; font-size: 24px; background-color: #757575;" onclick="noDiscount()">할인 없이 주문</button>
+            <div class="scan-instr-friendly">
+                쿠폰을 카메라 렌즈에 <b>바짝</b> 갖다 대세요.<br>
+                <span style="font-size: 16px; font-weight: normal; color: #555;">(화면이 까맣게 덮이면 인식이 완료됩니다)</span>
+            </div>
+            <button class="option-btn" style="padding: 20px; font-size: 24px; background-color: #757575;" onclick="noDiscount()">
+                <div class="tooltip">할인 쿠폰이 없다면 그냥 넘어가세요</div>
+                할인 적용 없이 주문
+            </button>
         </div>
 
-        <div class="scan-unfriendly-container unfriendly-ui">
-            <div id="reader-container-unfriendly">
-                <video id="camera-video-unfriendly" class="camera-video help-off-filter" autoplay playsinline></video>
-                <div class="scan-line-bad"></div>
-                <button class="cheat-btn" onclick="applyDiscount()"></button>
-            </div>
-            <div class="scan-instr-unfriendly">
-                Please place the valid promo code within the digital capture zone for automated processing and verification. 
-                Ensure optimal lighting conditions and avoid reflections.
-            </div>
-            <button class="option-btn alt" style="width: auto; padding: 10px 20px; font-size: 14px; margin-top: 15px;" onclick="noDiscount()">Skip Discount</button>
+        <div class="scan-unfriendly unfriendly-ui">
+            Please place the barcode inside the designated area.<br>
+            Discount is automatically applied after processing.<br>
+            If you do not have a barcode, please proceed below.
+            <button class="btn-unfriendly-scan" onclick="noDiscount()">Continue without Discount</button>
         </div>
         <button class="back-btn" onclick="goBackFromCamera()">⬅️ 이전으로</button>
     </div>
 
     <div id="step-option" class="screen">
         <div class="header friendly-ui">어디서 드시나요?</div>
-        <div class="header unfriendly-ui">Dining option.</div>
+        <div class="header unfriendly-ui">Select dining option.</div>
         <div class="btn-grid">
-            <button class="option-btn" onclick="setUserPlace('dineIn', '매장에서 드시는 것을 선택하셨습니다.')">매장</button>
-            <button class="option-btn alt" onclick="setUserPlace('toGo', '포장해 가시는 것을 선택하셨습니다.')">포장</button>
+            <button class="option-btn" onclick="setUserPlace('dineIn', '매장에서 드시는 것을 선택하셨습니다. 결제 방식을 골라주세요.')">
+                <div class="friendly-ui">
+                    <div class="tooltip">매장 안 의자에 앉아서 드실 때 눌러주세요</div>
+                    <span>🍽️ 매장에서 먹고 가기</span>
+                </div>
+                <div class="unfriendly-ui">Dine-in</div>
+            </button>
+            <button class="option-btn alt" onclick="setUserPlace('toGo', '포장해 가시는 것을 선택하셨습니다. 결제 방식을 골라주세요.')">
+                <div class="friendly-ui">
+                    <div class="tooltip" style="animation-delay: 0.3s;">들고 나가서 드실 때 눌러주세요</div>
+                    <span>🛍️ 포장해서 가져가기</span>
+                </div>
+                <div class="unfriendly-ui">To-go</div>
+            </button>
         </div>
         <button class="back-btn" onclick="goBackToCamera()">⬅️ 이전으로</button>
     </div>
@@ -275,10 +250,23 @@
             <div id="final-price-container"></div>
             <span id="final-price-text" style="color:#ff5722; font-size: 24px; font-weight: bold;">최종 금액: 0원</span>
         </div>
-        <div class="header unfriendly-ui">Payment.<br>Total: $0.0</div>
+        <div class="header unfriendly-ui">Checkout & Payment.<br>Final Price: $0.0</div>
+        
         <div class="btn-grid">
-            <button class="pay-btn" onclick="setUserPay('card')">카드</button>
-            <button class="pay-btn alt" onclick="setUserPay('mobile')">모바일</button>
+            <button class="pay-btn" onclick="setUserPay('card')">
+                <div class="friendly-ui">
+                    <div class="tooltip">실물 카드를 기기에 꽂아서 결제해요</div>
+                    <span>💳 신용카드 / 체크카드</span>
+                </div>
+                <div class="unfriendly-ui">Credit Card</div>
+            </button>
+            <button class="pay-btn alt" onclick="setUserPay('mobile')">
+                <div class="friendly-ui">
+                    <div class="tooltip" style="animation-delay: 0.3s;">휴대폰을 기기에 대서 결제해요</div>
+                    <span>📱 모바일 결제 (삼성페이)</span>
+                </div>
+                <div class="unfriendly-ui">Easy Pay</div>
+            </button>
         </div>
         <button class="back-btn" onclick="goToStep('step-option', '장소 선택 화면으로 돌아왔습니다.')">⬅️ 이전으로</button>
     </div>
@@ -287,7 +275,8 @@
         <div class="result-card">
             <div id="score-display" class="score-text">100점!</div>
             <div style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #333;">결제 완료 및 채점 결과</div>
-            <ul class="feedback-list" id="feedback-list"></ul>
+            <ul class="feedback-list" id="feedback-list">
+                </ul>
             <button class="restart-btn" onclick="initApp()">새로운 미션 도전하기</button>
         </div>
     </div>
@@ -296,7 +285,8 @@
 <script>
     const missionList = [
         { title: "☕ 미션 1: 가볍게 한 잔!", desc: "<b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인 없이]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.", target: { items: {'따뜻한 아메리카노': 1}, discount: false, place: 'dineIn', pay: 'card' } },
-        { title: "🛍️ 미션 2: 손주와 함께!", desc: "<b>[시원한 아메리카노 2잔]</b>을 <b>[할인 쿠폰을 적용]</b>하여 <b>[포장]</b>하고, <b>[모바일]</b>로 결제해 보세요.", target: { items: {'시원한 아메리카노': 2}, discount: true, place: 'toGo', pay: 'mobile' } }
+        { title: "🛍️ 미션 2: 손주와 함께!", desc: "<b>[시원한 아메리카노 2잔]</b>을 <b>[할인 쿠폰을 적용]</b>하여 <b>[포장]</b>하고, <b>[모바일]</b>로 결제해 보세요.", target: { items: {'시원한 아메리카노': 2}, discount: true, place: 'toGo', pay: 'mobile' } },
+        { title: "🥛 미션 3: 친구와 티타임!", desc: "<b>[부드러운 카페라떼 1잔]</b>과 <b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인을 받아]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.", target: { items: {'부드러운 카페라떼': 1, '따뜻한 아메리카노': 1}, discount: true, place: 'dineIn', pay: 'card' } }
     ];
 
     let currentMission = null;
@@ -307,9 +297,10 @@
     let userPlace = null; 
     let userPay = null;   
     
+    // 카메라 관련 변수
     let cameraStream = null;
     let scanInterval = null;
-    let scanStartTime = 0; 
+    let scanStartTime = 0; // [수정됨] 카메라 시작 시간을 기록할 변수
     const BLACK_THRESHOLD = 30; 
 
     function initApp() {
@@ -317,37 +308,36 @@
         userDiscount = false; userPlace = null; userPay = null;
         updateCartUI();
         stopScanner();
-        
+
         const randomIndex = Math.floor(Math.random() * missionList.length);
         currentMission = missionList[randomIndex];
+
         document.getElementById('m-title').innerHTML = currentMission.title;
         document.getElementById('m-desc').innerHTML = currentMission.desc;
+
         goToStep('step-mission', '');
         
         const plainText = currentMission.desc.replace(/<[^>]*>?/gm, ''); 
         setTimeout(() => speak("오늘의 미션입니다. " + plainText), 500);
     }
 
-    // [권한 사전 획득 처리 수정] 버튼 상태 명확히 변경
     async function startKiosk() {
         const btn = document.getElementById('start-btn');
         const originalText = btn.innerText;
-        btn.innerText = "카메라 권한 확인 중...";
+        btn.innerText = "카메라 준비 중...";
         btn.disabled = true;
 
         try {
-            // 브라우저 권한 팝업 유도
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            // 승인 즉시 종료
             stream.getTracks().forEach(track => track.stop());
         } catch (err) {
-            console.log("카메라 권한 사전 획득 실패(거부됨):", err);
-        } finally {
-            // 권한 획득 여부와 무관하게 앱은 진행
-            btn.innerText = originalText;
-            btn.disabled = false;
-            goToStep('step-menu', '미션을 시작합니다. 메뉴를 담아주세요.');
+            console.log("카메라 권한 사전 획득 실패:", err);
         }
+
+        btn.innerText = originalText;
+        btn.disabled = false;
+        
+        goToStep('step-menu', '미션을 시작합니다. 메뉴를 담아주세요.');
     }
 
     function speak(text) {
@@ -377,13 +367,18 @@
     }
 
     function goToStep(stepId, ttsMessage) {
-        document.querySelectorAll('.screen').forEach(screen => { screen.classList.remove('active'); });
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
         document.getElementById(stepId).classList.add('active');
-        
+
         const cartArea = document.getElementById('cart-area');
-        if (stepId === 'step-menu' && totalItems > 0) cartArea.style.display = 'flex';
-        else cartArea.style.display = 'none';
-        
+        if (stepId === 'step-menu' && totalItems > 0) {
+            cartArea.style.display = 'flex';
+        } else {
+            cartArea.style.display = 'none';
+        }
+
         if (ttsMessage) speak(ttsMessage);
         if (stepId === 'step-payment') updateFinalPrice();
     }
@@ -391,21 +386,22 @@
     function addToCart(itemName, price) {
         totalItems++; totalPrice += price;
         userCart[itemName] = (userCart[itemName] || 0) + 1; 
-        updateCartUI(); 
+        updateCartUI();
         speak(`${itemName}가 담겼습니다.`);
     }
 
-    function resetCart() { 
-        totalItems = 0; totalPrice = 0; userCart = {}; userDiscount = false; 
-        updateCartUI(); 
+    function resetCart() {
+        totalItems = 0; totalPrice = 0; userCart = {}; userDiscount = false;
+        updateCartUI();
+        speak("장바구니를 모두 비웠습니다.");
     }
 
     function updateCartUI() {
         const cartArea = document.getElementById('cart-area');
         if (totalItems > 0) cartArea.style.display = 'flex';
         else cartArea.style.display = 'none';
-        
-        document.getElementById('cart-count-text').innerText = `총 ${totalItems}잔`;
+
+        document.getElementById('cart-count-text').innerText = `총 ${totalItems}잔 담김`;
         document.getElementById('cart-total-text').innerText = `${totalPrice.toLocaleString()}원`;
         document.getElementById('cart-mini-text').innerText = `Cart(${totalItems}) $${(totalPrice/1000).toFixed(1)}`;
     }
@@ -414,42 +410,34 @@
     function setUserPay(payType) { userPay = payType; evaluateMission(); }
 
     function goFromCartToDiscount() {
-        goToStep('step-discount', '할인 쿠폰을 카메라 렌즈에 바짝 붙여주세요.');
+        goToStep('step-discount', '할인 적용 단계입니다. 쿠폰을 카메라에 비춰주세요.');
         startScanner(); 
     }
 
-    // === 카메라 로직 고도화 ===
     async function startScanner() {
         try {
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            const video = document.getElementById('camera-video');
+            video.srcObject = cameraStream;
             
-            // 두 비디오 태그 모두에 스트림을 연결하여 토글 시 끊김 없이 보여줌
-            document.getElementById('camera-video-friendly').srcObject = cameraStream;
-            document.getElementById('camera-video-unfriendly').srcObject = cameraStream;
-            
+            // [수정됨] 카메라가 켜진 시간을 기록합니다.
             scanStartTime = Date.now(); 
             scanInterval = setInterval(checkLuminance, 300);
-        } catch (err) { 
-            console.error("카메라 에러:", err); 
+        } catch (err) {
+            console.error("카메라 접근 불가:", err);
         }
     }
 
     function checkLuminance() {
-        const isHelpOn = document.getElementById('help-toggle').checked;
-        const videoId = isHelpOn ? 'camera-video-friendly' : 'camera-video-unfriendly';
-        
-        // [고도화] 도움 모드에 따라 대기 시간 차별화 (OFF 모드는 3초간 먹통)
-        const waitTime = isHelpOn ? 1500 : 3000; 
-        if (Date.now() - scanStartTime < waitTime) return;
+        // [수정됨] 카메라가 켜진 후 1.5초 동안은 초기 검은 화면 무시 (스킵 방지)
+        if (Date.now() - scanStartTime < 1500) return;
 
-        const video = document.getElementById(videoId);
+        const video = document.getElementById('camera-video');
         if (!video || video.videoWidth === 0) return; 
-        
         const canvas = document.createElement('canvas');
         canvas.width = 50; canvas.height = 50;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         let sum = 0;
         for (let i = 0; i < data.length; i += 4) { sum += (data[i] + data[i+1] + data[i+2]) / 3; }
@@ -461,22 +449,27 @@
     function stopScanner() {
         if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
         if (cameraStream) { cameraStream.getTracks().forEach(track => track.stop()); cameraStream = null; }
-        
-        // 비디오 소스 해제
-        document.getElementById('camera-video-friendly').srcObject = null;
-        document.getElementById('camera-video-unfriendly').srcObject = null;
     }
 
     function applyDiscount() {
         stopScanner();
-        userDiscount = true;
-        const msg = document.getElementById('help-toggle').checked ? '인식 완료! 천 원 할인이 적용됩니다.' : '';
+        if (!userDiscount && totalPrice > 1000) { 
+            userDiscount = true;
+            goToStep('step-option', '인식 완료! 천 원 할인이 적용되었습니다. 어디서 드실지 선택하세요.');
+        } else if (totalPrice <= 1000) {
+            goToStep('step-option', '할인을 적용할 수 없는 금액입니다.');
+        }
+    }
+
+    function noDiscount() {
+        stopScanner();
+        userDiscount = false;
+        const msg = document.getElementById('help-toggle').checked ? '할인 적용 없이 주문을 계속합니다.' : '';
         goToStep('step-option', msg);
     }
 
-    function noDiscount() { stopScanner(); userDiscount = false; goToStep('step-option', ''); }
-    function goBackFromCamera() { stopScanner(); goToStep('step-menu', ''); }
-    function goBackToCamera() { userDiscount = false; goToStep('step-discount', ''); startScanner(); }
+    function goBackFromCamera() { stopScanner(); goToStep('step-menu', '메뉴 화면으로 돌아왔습니다.'); }
+    function goBackToCamera() { userDiscount = false; goToStep('step-discount', '할인 화면으로 돌아왔습니다.'); startScanner(); }
 
     function updateFinalPrice() {
         const finalPrice = userDiscount ? totalPrice - 1000 : totalPrice;
@@ -495,25 +488,27 @@
         for (let key in target.items) { if (userCart[key] !== target.items[key]) itemsMatch = false; }
         if (Object.keys(userCart).length !== Object.keys(target.items).length) itemsMatch = false;
 
-        if (itemsMatch) feedbackHTML += "<li class='success'>✅ 메뉴 정확함</li>";
-        else { feedbackHTML += "<li class='fail'>❌ 음료 종류나 수량이 다름 (-25점)</li>"; score -= 25; }
+        if (itemsMatch) feedbackHTML += "<li class='success'>✅ 메뉴 및 수량 정확함</li>";
+        else { feedbackHTML += "<li class='fail'>❌ 주문한 음료나 수량이 다름 (-25점)</li>"; score -= 25; }
 
-        if (target.discount === userDiscount) feedbackHTML += "<li class='success'>✅ 할인 적용 정확함</li>";
-        else { feedbackHTML += `<li class='fail'>❌ 할인 적용 틀림 (미션: ${target.discount ? "O" : "X"}) (-25점)</li>`; score -= 25; }
+        if (target.discount === userDiscount) feedbackHTML += "<li class='success'>✅ 할인 적용 여부 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 할인 적용 틀림 (미션은 ${target.discount ? "할인 적용" : "할인 안 함"}) (-25점)</li>`; score -= 25; }
 
-        if (target.place === userPlace) feedbackHTML += "<li class='success'>✅ 장소 정확함</li>";
-        else { feedbackHTML += `<li class='fail'>❌ 장소 틀림 (미션: ${target.place === 'dineIn' ? "매장" : "포장"}) (-25점)</li>`; score -= 25; }
+        if (target.place === userPlace) feedbackHTML += "<li class='success'>✅ 장소 선택 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 장소 틀림 (미션은 ${target.place === 'dineIn' ? "매장" : "포장"}) (-25점)</li>`; score -= 25; }
 
-        if (target.pay === userPay) feedbackHTML += "<li class='success'>✅ 결제 정확함</li>";
-        else { feedbackHTML += `<li class='fail'>❌ 결제 틀림 (미션: ${target.pay === 'card' ? "카드" : "모바일"}) (-25점)</li>`; score -= 25; }
+        if (target.pay === userPay) feedbackHTML += "<li class='success'>✅ 결제 방식 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 결제 방식 틀림 (미션은 ${target.pay === 'card' ? "신용카드" : "모바일"}) (-25점)</li>`; score -= 25; }
 
-        document.getElementById('score-display').innerText = `${score}점!`;
-        document.getElementById('score-display').style.color = score === 100 ? "#4CAF50" : "#D32F2F"; 
+        const scoreDisplay = document.getElementById('score-display');
+        scoreDisplay.innerText = `${score}점!`;
+        scoreDisplay.style.color = score === 100 ? "#4CAF50" : "#D32F2F"; 
+        
         document.getElementById('feedback-list').innerHTML = feedbackHTML;
         goToStep('step-success', '');
         
-        if (score === 100) setTimeout(() => speak("만점입니다! 완벽하게 해내셨어요!"), 300);
-        else setTimeout(() => speak(`점수는 ${score}점입니다. 실수한 부분을 확인해 보세요.`), 300);
+        if (score === 100) setTimeout(() => speak("축하합니다! 백 점 만점입니다. 완벽하게 키오스크 주문을 해내셨어요!"), 300);
+        else setTimeout(() => speak(`수고하셨습니다. 점수는 ${score}점입니다. 어느 부분에서 실수하셨는지 화면에서 확인해 보세요.`), 300);
     }
 </script>
 
