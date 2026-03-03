@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>시니어 키오스크 체험 - 미션 모드</title>
+    <title>시니어 키오스크 체험 - 모바일 최적화</title>
     <style>
-        /* 기본 설정 */
-        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        .app-container { width: 100%; max-width: 600px; height: 100vh; background: white; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        /* 기본 설정 (모바일 브라우저 하단바 가림 방지를 위해 100dvh 사용) */
+        body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; height: 100dvh; overflow: hidden; }
+        .app-container { width: 100%; max-width: 600px; height: 100vh; height: 100dvh; background: white; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         
         /* 상단 토글 바 */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #333; color: white; z-index: 100; }
@@ -60,19 +60,38 @@
         .tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: #ffca28 transparent transparent transparent; }
         @keyframes floatUpDown { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
 
-        /* 장바구니 */
+        /* =========================================
+           장바구니 (모바일 클릭 불가 방지)
+           ========================================= */
         .cart-container { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 2px solid #ddd; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); display: none; flex-direction: column; z-index: 50; }
+        
         .help-mode .cart-container { padding: 20px; box-sizing: border-box; position: relative;}
         .help-mode .cart-info { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #333; }
         .help-mode .cart-buttons { display: flex; gap: 10px; }
         .help-mode .cart-reset-btn { flex: 1; padding: 20px; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; }
         .help-mode .cart-checkout-btn { flex: 2; padding: 20px; background: #ff5722; color: white; border: none; border-radius: 10px; font-size: 24px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; position: relative;}
-        .cart-container.unfriendly { padding: 5px; flex-direction: row; justify-content: space-between; align-items: center; background: #333; color: white; font-size: 12px; }
-        .cart-container.unfriendly .cart-checkout-btn { padding: 5px 10px; background: red; color: white; border: none; font-size: 12px; }
+        
+        /* 도움 OFF일 때의 장바구니 - 화면 중앙으로 대폭 끌어올림! */
+        .cart-container.unfriendly { 
+            bottom: 30%; 
+            left: 10%; 
+            width: 80%; 
+            border-radius: 10px; 
+            padding: 10px 15px; 
+            flex-direction: row; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #333; 
+            color: white; 
+            font-size: 14px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .cart-container.unfriendly .cart-checkout-btn { padding: 10px 15px; background: red; color: white; border: none; font-size: 14px; border-radius: 5px; }
+
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
         /* 가상 카메라 (화면 가림) */
-        #step-discount { justify-content: flex-start; align-items: center; text-align: center; }
+        #step-discount { justify-content: center; align-items: center; text-align: center; } /* 중앙 정렬로 변경 */
         #step-discount .scan-unfriendly { font-size: 11px; color: #aaa; text-align: left; line-height: 1.6; }
         #step-discount .btn-unfriendly-scan { border: 1px solid #ccc; background: #eee; padding: 10px 20px; font-size: 11px; color: #999; margin-top: 20px;}
         #step-discount .scan-friendly-container { display: none; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
@@ -85,15 +104,13 @@
         .cheat-btn { position: absolute; bottom: 0; right: 0; width: 80px; height: 80px; background: transparent; border: none; z-index: 10; cursor: pointer; }
         .scan-instr-friendly { font-size: 20px; font-weight: bold; color: #333; line-height: 1.4; margin-top: 10px; }
 
-        /* =========================================
-           새로운 화면: 미션 부여 및 성공 피드백
-           ========================================= */
         /* 미션 화면 */
         #step-mission { justify-content: center; align-items: center; background: #e3f2fd; }
         .mission-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; border: 5px solid #2196F3; }
         .mission-title { font-size: 28px; font-weight: bold; color: #1976D2; margin-bottom: 20px; }
         .mission-desc { font-size: 22px; line-height: 1.6; color: #333; font-weight: bold; text-align: left; background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 30px;}
-        .mission-start-btn { background: #ff9800; color: white; border: none; padding: 20px 40px; font-size: 26px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,152,0,0.4); transition: 0.2s; animation: pulse 2s infinite;}
+        .mission-start-btn { background: #ff9800; color: white; border: none; padding: 20px 40px; font-size: 24px; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,152,0,0.4); transition: 0.2s; animation: pulse 2s infinite; width: 100%;}
+        .mission-start-btn:disabled { background: #ccc; box-shadow: none; animation: none; }
 
         /* 결과 화면 */
         #step-success { justify-content: flex-start; align-items: center; background-color: #f4f4f9; padding-top: 50px; }
@@ -121,7 +138,7 @@
         <div class="mission-card">
             <div class="mission-title" id="m-title">☕ 오늘의 미션</div>
             <div class="mission-desc" id="m-desc">미션을 불러오는 중...</div>
-            <button class="mission-start-btn" onclick="startKiosk()">미션 도전하기!</button>
+            <button class="mission-start-btn" id="start-btn" onclick="startKiosk()">미션 도전하기!</button>
         </div>
     </div>
 
@@ -171,9 +188,9 @@
                 </button>
             </div>
         </div>
-        <div class="unfriendly-ui" style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+        <div class="unfriendly-ui">
             <span id="cart-mini-text">Cart(0) $0.0</span>
-            <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">Next</button>
+            <button class="cart-checkout-btn" onclick="goFromCartToDiscount()">Discount</button>
         </div>
     </div>
 
@@ -266,68 +283,64 @@
 </div>
 
 <script>
-    // === 0. 미션 데이터베이스 ===
     const missionList = [
-        {
-            title: "☕ 미션 1: 가볍게 한 잔!",
-            desc: "<b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인 없이]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.",
-            target: { items: {'따뜻한 아메리카노': 1}, discount: false, place: 'dineIn', pay: 'card' }
-        },
-        {
-            title: "🛍️ 미션 2: 손주와 함께!",
-            desc: "<b>[시원한 아메리카노 2잔]</b>을 <b>[할인 쿠폰을 적용]</b>하여 <b>[포장]</b>하고, <b>[모바일]</b>로 결제해 보세요.",
-            target: { items: {'시원한 아메리카노': 2}, discount: true, place: 'toGo', pay: 'mobile' }
-        },
-        {
-            title: "🥛 미션 3: 친구와 티타임!",
-            desc: "<b>[부드러운 카페라떼 1잔]</b>과 <b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인을 받아]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.",
-            target: { items: {'부드러운 카페라떼': 1, '따뜻한 아메리카노': 1}, discount: true, place: 'dineIn', pay: 'card' }
-        }
+        { title: "☕ 미션 1: 가볍게 한 잔!", desc: "<b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인 없이]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.", target: { items: {'따뜻한 아메리카노': 1}, discount: false, place: 'dineIn', pay: 'card' } },
+        { title: "🛍️ 미션 2: 손주와 함께!", desc: "<b>[시원한 아메리카노 2잔]</b>을 <b>[할인 쿠폰을 적용]</b>하여 <b>[포장]</b>하고, <b>[모바일]</b>로 결제해 보세요.", target: { items: {'시원한 아메리카노': 2}, discount: true, place: 'toGo', pay: 'mobile' } },
+        { title: "🥛 미션 3: 친구와 티타임!", desc: "<b>[부드러운 카페라떼 1잔]</b>과 <b>[따뜻한 아메리카노 1잔]</b>을 <b>[할인을 받아]</b> <b>[매장]</b>에서 <b>[신용카드]</b>로 결제해 보세요.", target: { items: {'부드러운 카페라떼': 1, '따뜻한 아메리카노': 1}, discount: true, place: 'dineIn', pay: 'card' } }
     ];
 
-    // === 1. 유저 상태 및 추적 변수 ===
     let currentMission = null;
-    let userCart = {}; // 사용자가 담은 음료 기록 { '음료이름': 수량 }
+    let userCart = {}; 
     let totalItems = 0;
     let totalPrice = 0;
     let userDiscount = false;
-    let userPlace = null; // 'dineIn' or 'toGo'
-    let userPay = null;   // 'card' or 'mobile'
-    
-    // 카메라 관련 변수
+    let userPlace = null; 
+    let userPay = null;   
     let cameraStream = null;
     let scanInterval = null;
     const BLACK_THRESHOLD = 30; 
 
-    // === 2. 앱 초기화 및 미션 세팅 ===
     function initApp() {
-        // 모든 변수 초기화
         userCart = {}; totalItems = 0; totalPrice = 0;
         userDiscount = false; userPlace = null; userPay = null;
         updateCartUI();
         stopScanner();
 
-        // 랜덤 미션 선택
         const randomIndex = Math.floor(Math.random() * missionList.length);
         currentMission = missionList[randomIndex];
 
-        // 미션 화면에 출력
         document.getElementById('m-title').innerHTML = currentMission.title;
         document.getElementById('m-desc').innerHTML = currentMission.desc;
 
-        // 미션 화면 띄우기 (도움 모드가 켜져있다면 읽어주기)
         goToStep('step-mission', '');
         
-        // 텍스트에서 태그 빼고 순수 글자만 읽어주도록 필터링
         const plainText = currentMission.desc.replace(/<[^>]*>?/gm, ''); 
         setTimeout(() => speak("오늘의 미션입니다. " + plainText), 500);
     }
 
-    function startKiosk() {
+    // [핵심 변경 1] 권한 사전 획득 처리
+    async function startKiosk() {
+        const btn = document.getElementById('start-btn');
+        const originalText = btn.innerText;
+        btn.innerText = "카메라 준비 중...";
+        btn.disabled = true;
+
+        try {
+            // 버튼을 누르는 순간 카메라 권한 팝업 호출
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            // 권한을 얻으면 즉시 스트림을 꺼서 배터리 소모 방지
+            stream.getTracks().forEach(track => track.stop());
+        } catch (err) {
+            console.log("카메라 권한 사전 획득 실패(거부됨):", err);
+        }
+
+        btn.innerText = originalText;
+        btn.disabled = false;
+        
+        // 권한 팝업 처리가 끝나면 메뉴 화면으로 이동
         goToStep('step-menu', '미션을 시작합니다. 메뉴를 담아주세요.');
     }
 
-    // === 3. TTS (음성 읽어주기) ===
     function speak(text) {
         if (!document.getElementById('help-toggle').checked) return;
         if ('speechSynthesis' in window) {
@@ -339,7 +352,6 @@
         }
     }
 
-    // === 4. UI 토글 ===
     function toggleMode() {
         const body = document.getElementById('app-body');
         const toggle = document.getElementById('help-toggle');
@@ -355,7 +367,6 @@
         }
     }
 
-    // === 5. 화면 이동 제어 ===
     function goToStep(stepId, ttsMessage) {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
@@ -373,11 +384,9 @@
         if (stepId === 'step-payment') updateFinalPrice();
     }
 
-    // === 6. 사용자의 선택 기록 (장바구니, 장소, 결제) ===
     function addToCart(itemName, price) {
-        totalItems++;
-        totalPrice += price;
-        userCart[itemName] = (userCart[itemName] || 0) + 1; // 수량 추적
+        totalItems++; totalPrice += price;
+        userCart[itemName] = (userCart[itemName] || 0) + 1; 
         updateCartUI();
         speak(`${itemName}가 담겼습니다.`);
     }
@@ -398,18 +407,9 @@
         document.getElementById('cart-mini-text').innerText = `Cart(${totalItems}) $${(totalPrice/1000).toFixed(1)}`;
     }
 
-    function setUserPlace(place, msg) {
-        userPlace = place;
-        goToStep('step-payment', msg);
-    }
+    function setUserPlace(place, msg) { userPlace = place; goToStep('step-payment', msg); }
+    function setUserPay(payType) { userPay = payType; evaluateMission(); }
 
-    function setUserPay(payType) {
-        userPay = payType;
-        // 결제가 완료되면 평가 로직 실행 후 결과 화면으로 이동
-        evaluateMission();
-    }
-
-    // === 7. 카메라 구동 및 밝기(어두움) 감지 로직 ===
     function goFromCartToDiscount() {
         goToStep('step-discount', '할인 적용 단계입니다. 쿠폰을 카메라에 비춰주세요.');
         startScanner(); 
@@ -423,7 +423,7 @@
             scanInterval = setInterval(checkLuminance, 300);
         } catch (err) {
             console.error("카메라 접근 불가:", err);
-            alert("카메라 권한이 없습니다. 우측 하단의 빈 곳(비상버튼)을 클릭하세요.");
+            // 권한을 거절했더라도 앱은 진행되어야 하므로 alert는 생략하고 비상버튼을 유도할 수 있습니다.
         }
     }
 
@@ -475,72 +475,38 @@
         document.getElementById('final-price-text').innerText = `최종 금액: ${finalPrice.toLocaleString()}원`;
     }
 
-    // === 8. 결과 평가 및 채점 로직 ===
     function evaluateMission() {
         let score = 100;
         let feedbackHTML = "";
-        
         const target = currentMission.target;
-
-        // 1. 메뉴 검사 (종류와 수량 완벽 일치해야 함)
         let itemsMatch = true;
-        // 미션에 있는 메뉴가 정확히 담겼는지
-        for (let key in target.items) {
-            if (userCart[key] !== target.items[key]) itemsMatch = false;
-        }
-        // 미션에 없는 엉뚱한 메뉴를 담지 않았는지
+        
+        for (let key in target.items) { if (userCart[key] !== target.items[key]) itemsMatch = false; }
         if (Object.keys(userCart).length !== Object.keys(target.items).length) itemsMatch = false;
 
-        if (itemsMatch) {
-            feedbackHTML += "<li class='success'>✅ 메뉴 및 수량 정확함</li>";
-        } else {
-            feedbackHTML += "<li class='fail'>❌ 주문한 음료나 수량이 미션과 다름 (-25점)</li>";
-            score -= 25;
-        }
+        if (itemsMatch) feedbackHTML += "<li class='success'>✅ 메뉴 및 수량 정확함</li>";
+        else { feedbackHTML += "<li class='fail'>❌ 주문한 음료나 수량이 다름 (-25점)</li>"; score -= 25; }
 
-        // 2. 할인 검사
-        if (target.discount === userDiscount) {
-            feedbackHTML += "<li class='success'>✅ 할인 적용 여부 정확함</li>";
-        } else {
-            feedbackHTML += `<li class='fail'>❌ 할인 적용 틀림 (미션은 ${target.discount ? "할인 적용" : "할인 안 함"}) (-25점)</li>`;
-            score -= 25;
-        }
+        if (target.discount === userDiscount) feedbackHTML += "<li class='success'>✅ 할인 적용 여부 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 할인 적용 틀림 (미션은 ${target.discount ? "할인 적용" : "할인 안 함"}) (-25점)</li>`; score -= 25; }
 
-        // 3. 장소 검사
-        if (target.place === userPlace) {
-            feedbackHTML += "<li class='success'>✅ 장소 선택 정확함</li>";
-        } else {
-            feedbackHTML += `<li class='fail'>❌ 장소 틀림 (미션은 ${target.place === 'dineIn' ? "매장" : "포장"}) (-25점)</li>`;
-            score -= 25;
-        }
+        if (target.place === userPlace) feedbackHTML += "<li class='success'>✅ 장소 선택 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 장소 틀림 (미션은 ${target.place === 'dineIn' ? "매장" : "포장"}) (-25점)</li>`; score -= 25; }
 
-        // 4. 결제 방식 검사
-        if (target.pay === userPay) {
-            feedbackHTML += "<li class='success'>✅ 결제 방식 정확함</li>";
-        } else {
-            feedbackHTML += `<li class='fail'>❌ 결제 방식 틀림 (미션은 ${target.pay === 'card' ? "신용카드" : "모바일"}) (-25점)</li>`;
-            score -= 25;
-        }
+        if (target.pay === userPay) feedbackHTML += "<li class='success'>✅ 결제 방식 정확함</li>";
+        else { feedbackHTML += `<li class='fail'>❌ 결제 방식 틀림 (미션은 ${target.pay === 'card' ? "신용카드" : "모바일"}) (-25점)</li>`; score -= 25; }
 
-        // 화면 갱신 및 이동
         const scoreDisplay = document.getElementById('score-display');
         scoreDisplay.innerText = `${score}점!`;
-        scoreDisplay.style.color = score === 100 ? "#4CAF50" : "#D32F2F"; // 백점이면 초록색, 깎였으면 빨간색
+        scoreDisplay.style.color = score === 100 ? "#4CAF50" : "#D32F2F"; 
         
         document.getElementById('feedback-list').innerHTML = feedbackHTML;
-        
-        // 화면 먼저 띄우고
         goToStep('step-success', '');
         
-        // 소리로 피드백 읽어주기
-        if (score === 100) {
-            setTimeout(() => speak("축하합니다! 백 점 만점입니다. 완벽하게 키오스크 주문을 해내셨어요!"), 300);
-        } else {
-            setTimeout(() => speak(`수고하셨습니다. 점수는 ${score}점입니다. 어느 부분에서 실수하셨는지 화면에서 확인해 보세요.`), 300);
-        }
+        if (score === 100) setTimeout(() => speak("축하합니다! 백 점 만점입니다. 완벽하게 키오스크 주문을 해내셨어요!"), 300);
+        else setTimeout(() => speak(`수고하셨습니다. 점수는 ${score}점입니다. 어느 부분에서 실수하셨는지 화면에서 확인해 보세요.`), 300);
     }
 </script>
 
 </body>
 </html>
-
