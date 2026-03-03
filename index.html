@@ -31,8 +31,13 @@
         .option-btn { background-color: #4CAF50; color: white; border: none; padding: 40px 20px; font-size: 32px; font-weight: bold; border-radius: 20px; cursor: pointer; text-align: center; }
         .option-btn.takeout { background-color: #2196F3; }
 
-        /* 4단계: 성공 화면 */
-        #step4-success { display: none; padding: 20px; height: 100%; flex-direction: column; justify-content: center; align-items: center; text-align: center; background-color: #4CAF50; color: white; }
+        /* 4단계: 결제수단 선택 */
+        #step4-payment { display: none; padding: 20px; height: 100%; flex-direction: column; justify-content: center; gap: 20px; }
+        .payment-btn { background-color: #ff9800; color: white; border: none; padding: 40px 20px; font-size: 28px; font-weight: bold; border-radius: 20px; cursor: pointer; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .payment-btn.mobile-pay { background-color: #673ab7; }
+
+        /* 5단계: 성공 화면 */
+        #step5-success { display: none; padding: 20px; height: 100%; flex-direction: column; justify-content: center; align-items: center; text-align: center; background-color: #4CAF50; color: white; }
         .success-icon { font-size: 80px; margin-bottom: 20px; }
         .success-text { font-size: 32px; font-weight: bold; line-height: 1.5; }
         .restart-btn { margin-top: 40px; background: white; color: #4CAF50; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; }
@@ -79,13 +84,19 @@
 
     <div id="step3-option">
         <div class="header">어디서 드시나요?</div>
-        <button class="option-btn" onclick="showScreen('step4-success')">🍽️ 매장에서 먹고 가기</button>
-        <button class="option-btn takeout" onclick="showScreen('step4-success')">🛍️ 포장해서 가져가기</button>
+        <button class="option-btn" onclick="showScreen('step4-payment')">🍽️ 매장에서 먹고 가기</button>
+        <button class="option-btn takeout" onclick="showScreen('step4-payment')">🛍️ 포장해서 가져가기</button>
     </div>
 
-    <div id="step4-success">
+    <div id="step4-payment">
+        <div class="header">어떻게 결제하시겠어요?</div>
+        <button class="payment-btn" onclick="showScreen('step5-success')">💳 신용카드 / 체크카드</button>
+        <button class="payment-btn mobile-pay" onclick="showScreen('step5-success')">📱 모바일 결제 (삼성페이 등)</button>
+    </div>
+
+    <div id="step5-success">
         <div class="success-icon">🎉</div>
-        <div class="success-text">주문 완료!<br>참 잘하셨습니다!</div>
+        <div class="success-text">결제 완료!<br>참 잘하셨습니다!</div>
         <button class="restart-btn" onclick="showScreen('step1-unfriendly')">처음으로 돌아가기</button>
     </div>
 </div>
@@ -96,9 +107,10 @@
         document.getElementById('step1-unfriendly').style.display = 'none';
         document.getElementById('step2-kiosk').style.display = 'none';
         document.getElementById('step3-option').style.display = 'none';
-        document.getElementById('step4-success').style.display = 'none';
+        document.getElementById('step4-payment').style.display = 'none';
+        document.getElementById('step5-success').style.display = 'none';
         
-        // 선택한 화면만 보이기 (2단계부터는 flex 사용)
+        // 선택한 화면만 보이기 (1단계는 block, 나머지는 flex 사용)
         if(screenId === 'step1-unfriendly') {
             document.getElementById(screenId).style.display = 'block';
         } else {
@@ -108,5 +120,4 @@
 </script>
 
 </body>
-
 </html>
