@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>시니어 키오스크 체험</title>
+    <title>시니어 키오스크 체험 - 고도화 버전</title>
     <style>
         /* 기본 설정 */
         body { font-family: 'Malgun Gothic', sans-serif; margin: 0; padding: 0; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
@@ -22,7 +22,7 @@
         input:checked + .slider:before { transform: translateX(26px); }
 
         /* 공통 컨테이너 */
-        .screen { display: none; padding: 20px; flex-direction: column; flex-grow: 1; overflow-y: auto; position: relative; }
+        .screen { display: none; padding: 20px; flex-direction: column; flex-grow: 1; overflow-y: auto; position: relative; padding-bottom: 120px; }
         .screen.active { display: flex; }
         
         /* [기본 상태: 도움 OFF] */
@@ -32,25 +32,28 @@
         .header { font-size: 14px; color: #999; text-align: left; padding: 0; margin-bottom: 10px; border: none; background: transparent; }
         .btn-grid { display: flex; gap: 5px; flex-direction: row; flex-wrap: wrap; justify-content: center; margin-top: 50px; }
         
-        .action-btn, .option-btn, .pay-btn, .coupon-btn { 
+        .action-btn, .option-btn, .pay-btn { 
             width: 80px; height: 80px; padding: 5px; font-size: 10px; background: #eee; border: 1px solid #ccc; border-radius: 0; color: #999; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; position: relative; box-shadow: none; margin: 0;
         }
 
         /* [도움 ON 상태] 시니어 친화적 UI (.help-mode) */
         .help-mode .friendly-ui { display: flex !important; width: 100%; justify-content: space-between; align-items: center; }
-        .help-mode .option-btn .friendly-ui, .help-mode .pay-btn .friendly-ui, .help-mode .coupon-btn .friendly-ui { justify-content: center; }
+        .help-mode .option-btn .friendly-ui, .help-mode .pay-btn .friendly-ui { justify-content: center; }
         .help-mode .unfriendly-ui { display: none !important; }
 
-        .help-mode .header { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 30px; margin-top: 10px; padding: 20px; background: #fff3e0; color: #333; border-radius: 15px; }
+        .help-mode .header { font-size: 28px; font-weight: bold; text-align: center; margin-bottom: 20px; margin-top: 10px; padding: 20px; background: #fff3e0; color: #333; border-radius: 15px; position: relative; }
         .help-mode .btn-grid { gap: 20px; flex-direction: column; margin-top: 0; flex-wrap: nowrap; }
         
-        .help-mode .action-btn { width: 100%; height: auto; border: 3px solid #ddd; padding: 30px 20px; font-size: 24px; font-weight: bold; border-radius: 15px; background: white; color: #333; }
-        .help-mode .option-btn { width: 100%; height: auto; background-color: #4CAF50; color: white; border: none; padding: 40px 20px; font-size: 32px; font-weight: bold; border-radius: 20px; }
+        .help-mode .action-btn { width: 100%; height: auto; border: 3px solid #ddd; padding: 30px 20px; font-size: 24px; font-weight: bold; border-radius: 15px; background: white; color: #333; transition: 0.2s; }
+        .help-mode .action-btn:active { background-color: #e8f5e9; border-color: #4CAF50; transform: scale(0.98); }
+        .help-mode .option-btn { width: 100%; height: auto; background-color: #4CAF50; color: white; border: none; padding: 40px 20px; font-size: 32px; font-weight: bold; border-radius: 20px; margin-bottom: 10px; position: relative; }
         .help-mode .option-btn.alt { background-color: #2196F3; }
-        .help-mode .pay-btn { width: 100%; height: auto; background-color: #ff9800; color: white; border: none; padding: 30px 20px; font-size: 26px; font-weight: bold; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .help-mode .pay-btn { width: 100%; height: auto; background-color: #ff9800; color: white; border: none; padding: 30px 20px; font-size: 26px; font-weight: bold; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 10px; position: relative; }
         .help-mode .pay-btn.alt { background-color: #673ab7; }
-        
-        .help-mode .coupon-btn { width: 100%; height: auto; background-color: #e91e63; color: white; border: none; padding: 20px; font-size: 22px; font-weight: bold; border-radius: 15px; margin-bottom: 20px; border: 3px dashed #f8bbd0; }
+
+        /* 이전으로 가기 버튼 (하단 배치) */
+        .back-btn { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: #e0e0e0; border: 1px solid #ccc; padding: 15px 25px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; color: #333; z-index: 10; display: none; }
+        .help-mode .back-btn { display: block; } /* 도움 모드일 때만 보임 */
 
         /* 말풍선 공통 스타일 */
         .tooltip { 
@@ -63,38 +66,61 @@
             content: ''; position: absolute; top: 100%; left: 50%; margin-left: -10px;
             border-width: 10px; border-style: solid; border-color: #ffca28 transparent transparent transparent; 
         }
-        @keyframes floatUpDown {
-            0%, 100% { transform: translate(-50%, 0); }
-            50% { transform: translate(-50%, -8px); }
-        }
+        @keyframes floatUpDown { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -8px); } }
 
-        /* 카메라 스캔 화면 */
-        #step-camera { padding: 0; background: #000; justify-content: center; align-items: center; }
-        #camera-video { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; }
-        .scan-overlay { position: absolute; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.5); pointer-events: none; }
-        .scan-guide-box { width: 250px; height: 150px; border: 4px solid #4CAF50; border-radius: 15px; position: relative; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); background: transparent; }
-        .scan-line { width: 100%; height: 2px; background: red; position: absolute; top: 50%; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite linear; }
+        /* =========================================
+           장바구니 (하단 고정)
+           ========================================= */
+        .cart-container { position: absolute; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 2px solid #ddd; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); display: none; flex-direction: column; z-index: 50; }
+        
+        /* 도움 ON일 때의 장바구니 */
+        .help-mode .cart-container { padding: 20px; box-sizing: border-box; position: relative;}
+        .help-mode .cart-info { display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; margin-bottom: 15px; color: #333; }
+        .help-mode .cart-buttons { display: flex; gap: 10px; }
+        .help-mode .cart-reset-btn { flex: 1; padding: 20px; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .help-mode .cart-checkout-btn { flex: 2; padding: 20px; background: #ff5722; color: white; border: none; border-radius: 10px; font-size: 24px; font-weight: bold; cursor: pointer; animation: pulse 2s infinite; position: relative;}
+        
+        /* 도움 OFF일 때의 장바구니 (작고 불편하게) */
+        .cart-container.unfriendly { padding: 5px; flex-direction: row; justify-content: space-between; align-items: center; background: #333; color: white; font-size: 12px; }
+        .cart-container.unfriendly .cart-checkout-btn { padding: 5px 10px; background: red; color: white; border: none; font-size: 12px; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        /* =========================================
+           할인 적용 화면 (가상 카메라 스캔)
+           ========================================= */
+        #step-discount { justify-content: center; align-items: center; text-align: center; }
+        
+        /* 도움 OFF일 때의 불친절한 스캔 화면 */
+        #step-discount .scan-unfriendly { font-size: 11px; color: #aaa; text-align: left; line-height: 1.6; }
+        #step-discount .btn-unfriendly-scan { border: 1px solid #ccc; background: #eee; padding: 10px 20px; font-size: 11px; color: #999; margin-top: 20px;}
+
+        /* 도움 ON일 때의 가상 카메라 화면 */
+        #step-discount .scan-friendly-container { display: none; flex-direction: column; align-items: center; gap: 20px;}
+        .help-mode #step-discount .scan-friendly-container { display: flex;}
+        .help-mode #step-discount .scan-unfriendly, .help-mode #step-discount .btn-unfriendly-scan { display: none;}
+
+        .help-mode #camera-simulation { width: 300px; height: 300px; background-color: black; border: 10px solid #ddd; border-radius: 15px; position: relative; cursor: pointer; }
+        .help-mode #camera-simulation .scan-line { width: 100%; height: 2px; background: red; position: absolute; top: 50%; left: 0; box-shadow: 0 0 10px red; animation: scanAnim 2s infinite linear; }
+        .help-mode #camera-simulation .black-detect-msg { color: white; font-size: 14px; text-align: center; width: 100%; position: absolute; bottom: 20px; font-weight: bold;}
+        
         @keyframes scanAnim { 0% { top: 10%; } 50% { top: 90%; } 100% { top: 10%; } }
-        .scan-text { color: white; font-size: 24px; font-weight: bold; margin-top: 30px; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        .touch-to-scan { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: pointer; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 50px; }
-        .touch-btn-text { background: rgba(255,87,34,0.9); color: white; padding: 15px 30px; border-radius: 30px; font-size: 20px; font-weight: bold; pointer-events: none; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .cancel-camera-btn { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.3); color: white; border: 2px solid white; padding: 10px 20px; border-radius: 10px; z-index: 11; font-weight: bold; font-size: 16px; cursor: pointer; }
+
+        .scan-instr-friendly { font-size: 22px; font-weight: bold; color: #333; line-height: 1.4; margin-top: 10px;}
 
         /* 성공 화면 */
-        #step-success { justify-content: center; align-items: center; text-align: center; background-color: #4CAF50; color: white; height: 100%; }
+        #step-success { justify-content: center; align-items: center; text-align: center; background-color: #4CAF50; color: white; height: 100%; padding-bottom: 20px; }
         .success-icon { font-size: 80px; margin-bottom: 20px; }
         .success-text { font-size: 32px; font-weight: bold; line-height: 1.5; }
         .restart-btn { margin-top: 40px; background: white; color: #4CAF50; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; }
-        .coupon-applied-badge { display: none; background: #e91e63; color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; font-size: 18px; animation: bounceIn 0.5s; }
-        @keyframes bounceIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .discount-applied-badge { display: none; background: #ffca28; color: #333; padding: 5px 10px; border-radius: 5px; font-size: 16px; margin-right: 10px; font-weight: bold;}
     </style>
 </head>
 <body id="app-body"> 
 
 <div class="app-container">
     <div class="top-bar">
-        <span class="toggle-label">💡 도움 모드 (큰 글씨 및 안내)</span>
+        <span class="toggle-label">💡 도움 모드 (안내 및 음성 읽어주기)</span>
         <label class="switch">
             <input type="checkbox" id="help-toggle" onchange="toggleMode()">
             <span class="slider round"></span>
@@ -103,39 +129,94 @@
 
     <div id="step-menu" class="screen active">
         <div class="header friendly-ui">어떤 음료를 드시겠어요?</div>
-        <div class="header unfriendly-ui">Select your beverage. Add shots or syrups.</div>
+        <div class="header unfriendly-ui">Select your beverage.</div>
+        
         <div class="btn-grid">
-            <button class="action-btn" onclick="nextStep('step-option')">
+            <button class="action-btn" onclick="addToCart('따뜻한 아메리카노', 2000)">
                 <div class="friendly-ui">
                     <div class="tooltip">단맛이 없는 따뜻한 블랙커피예요</div>
                     <span>☕ 따뜻한 아메리카노</span>
-                    <span>2,000원</span>
+                    <span>2,000원 담기</span>
                 </div>
                 <div class="unfriendly-ui">HOT<br>Americano<br>2.0</div>
             </button>
-            <button class="action-btn" onclick="nextStep('step-option')">
+            <button class="action-btn" onclick="addToCart('시원한 아메리카노', 2000)">
                 <div class="friendly-ui">
                     <div class="tooltip" style="animation-delay: 0.2s;">얼음이 들어간 시원한 커피예요</div>
                     <span>🧊 시원한 아메리카노</span>
-                    <span>2,000원</span>
+                    <span>2,000원 담기</span>
                 </div>
                 <div class="unfriendly-ui">ICED<br>Americano<br>2.0</div>
             </button>
+            <button class="action-btn" onclick="addToCart('부드러운 카페라떼', 3000)">
+                <div class="friendly-ui">
+                    <div class="tooltip" style="animation-delay: 0.4s;">우유가 들어가 고소해요</div>
+                    <span>🥛 부드러운 카페라떼</span>
+                    <span>3,000원 담기</span>
+                </div>
+                <div class="unfriendly-ui">Cafe Latte<br>3.0</div>
+            </button>
         </div>
+    </div>
+
+    <div id="cart-area" class="cart-container unfriendly">
+        <div class="friendly-ui" style="flex-direction: column; width: 100%;">
+            <div class="cart-info">
+                <span id="cart-count-text">총 0잔 담김</span>
+                <span id="cart-total-text" style="color: #ff5722;">0원</span>
+            </div>
+            <div class="cart-buttons">
+                <button class="cart-reset-btn" onclick="resetCart()">전체 취소</button>
+                <button class="cart-checkout-btn" onclick="goToStep('step-discount', '할인 적용 버튼을 누르셨습니다. 할인 쿠폰이 있다면 바코드를 찍어주세요.')">
+                    <div class="tooltip">할인 쿠폰이 있다면 찍어보세요</div>
+                    주문 및 할인 적용
+                </button>
+            </div>
+        </div>
+
+        <div class="unfriendly-ui" style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+            <span id="cart-mini-text">Cart(0) $0.0</span>
+            <button class="cart-checkout-btn" onclick="goToStep('step-discount', '')">Discount</button>
+        </div>
+    </div>
+
+    <div id="step-discount" class="screen">
+        <div class="header friendly-ui">할인 쿠폰이 있으신가요?</div>
+        <div class="header unfriendly-ui">Apply Discount Barcode</div>
+        
+        <div class="scan-friendly-container">
+            <div id="camera-simulation" onclick="applyDiscount()">
+                <div class="scan-line"></div>
+                <div class="black-detect-msg">검은 화면 감지 대기 중</div>
+            </div>
+            <div class="scan-instr-friendly">할인 쿠폰의 바코드를 카메라에 비춰주세요.<br>가짜 카메라 화면이 완전히 검게 변하면 인식이 완료됩니다.</div>
+            <button class="option-btn" onclick="noDiscount()">
+                <div class="tooltip">할인 쿠폰이 없다면 그냥 넘어가세요</div>
+                할인 적용 없이 주문
+            </button>
+        </div>
+
+        <div class="scan-unfriendly unfriendly-ui">
+            Please place the barcode inside the designated area.<br>
+            Discount is automatically applied after processing.<br>
+            If you do not have a barcode, please proceed below.
+            <button class="btn-unfriendly-scan" onclick="noDiscount()">Continue without Discount</button>
+        </div>
+        <button class="back-btn" onclick="goToStep('step-menu', '메뉴 화면으로 돌아왔습니다.')">⬅️ 이전으로</button>
     </div>
 
     <div id="step-option" class="screen">
         <div class="header friendly-ui">어디서 드시나요?</div>
         <div class="header unfriendly-ui">Select dining option.</div>
         <div class="btn-grid">
-            <button class="option-btn" onclick="nextStep('step-payment')">
+            <button class="option-btn" onclick="goToStep('step-payment', '매장에서 드시는 것을 선택하셨습니다. 결제 방식을 골라주세요.')">
                 <div class="friendly-ui">
                     <div class="tooltip">매장 안 의자에 앉아서 드실 때 눌러주세요</div>
                     <span>🍽️ 매장에서 먹고 가기</span>
                 </div>
                 <div class="unfriendly-ui">Dine-in</div>
             </button>
-            <button class="option-btn alt" onclick="nextStep('step-payment')">
+            <button class="option-btn alt" onclick="goToStep('step-payment', '포장해 가시는 것을 선택하셨습니다. 결제 방식을 골라주세요.')">
                 <div class="friendly-ui">
                     <div class="tooltip" style="animation-delay: 0.3s;">들고 나가서 드실 때 눌러주세요</div>
                     <span>🛍️ 포장해서 가져가기</span>
@@ -143,31 +224,21 @@
                 <div class="unfriendly-ui">To-go</div>
             </button>
         </div>
+        <button class="back-btn" onclick="goToStep('step-discount', '할인 적용 화면으로 돌아왔습니다.')">⬅️ 이전으로</button>
     </div>
 
     <div id="step-payment" class="screen">
-        <div class="header friendly-ui">결제 방식을 선택해 주세요.</div>
-        <div class="header unfriendly-ui">Checkout & Payment.</div>
-        
-        <div id="coupon-badge" class="coupon-applied-badge">🎉 500원 할인 쿠폰이 적용되었습니다!</div>
-
+        <div class="header friendly-ui">결제 방식을 선택해 주세요.<br><span id="final-price-text" style="color:#ff5722; font-size: 24px;">최종 금액: 0원</span></div>
+        <div class="header unfriendly-ui">Checkout & Payment.<br>Final Price: $0.0</div>
         <div class="btn-grid">
-            <button class="coupon-btn" onclick="openCamera()">
-                <div class="friendly-ui">
-                    <div class="tooltip">할인 쿠폰이 있다면 여기를 먼저 눌러주세요</div>
-                    <span>🎫 할인 쿠폰 바코드 스캔하기</span>
-                </div>
-                <div class="unfriendly-ui">Promo/Barcode</div>
-            </button>
-
-            <button class="pay-btn" onclick="nextStep('step-success')">
+            <button class="pay-btn" onclick="goToStep('step-success', '신용카드로 결제합니다. 카드를 기기에 꽂아주세요.')">
                 <div class="friendly-ui">
                     <div class="tooltip">실물 카드를 기기에 꽂아서 결제해요</div>
                     <span>💳 신용카드 / 체크카드</span>
                 </div>
                 <div class="unfriendly-ui">Credit Card</div>
             </button>
-            <button class="pay-btn alt" onclick="nextStep('step-success')">
+            <button class="pay-btn alt" onclick="goToStep('step-success', '모바일 결제를 진행합니다. 휴대폰을 기기에 대주세요.')">
                 <div class="friendly-ui">
                     <div class="tooltip" style="animation-delay: 0.3s;">휴대폰을 기기에 대서 결제해요</div>
                     <span>📱 모바일 결제 (삼성페이)</span>
@@ -175,19 +246,7 @@
                 <div class="unfriendly-ui">Easy Pay</div>
             </button>
         </div>
-    </div>
-
-    <div id="step-camera" class="screen">
-        <video id="camera-video" autoplay playsinline></video>
-        <button class="cancel-camera-btn" onclick="closeCamera(false)">돌아가기</button>
-        <div class="scan-overlay">
-            <div class="scan-guide-box"><div class="scan-line"></div></div>
-            <div class="scan-text friendly-ui">초록색 네모 칸 안에<br>바코드를 비춰주세요</div>
-            <div class="scan-text unfriendly-ui" style="font-size: 14px; color: #ccc;">Align barcode. Auto-scan only.</div>
-        </div>
-        <div class="touch-to-scan" onclick="closeCamera(true)">
-            <div class="touch-btn-text friendly-ui">여기를 터치하면 스캔이 완료됩니다</div>
-        </div>
+        <button class="back-btn" onclick="goToStep('step-option', '장소 선택 화면으로 돌아왔습니다.')">⬅️ 이전으로</button>
     </div>
 
     <div id="step-success" class="screen">
@@ -198,51 +257,157 @@
 </div>
 
 <script>
-    let cameraStream = null;
+    // === 1. 상태 변수 ===
+    let totalItems = 0;
+    let totalPrice = 0;
+    let discountApplied = false;
+    let discountAmount = 1000; // 할인 금액 예시: 1,000원
 
+    // === 2. TTS (음성 읽어주기) 함수 ===
+    function speak(text) {
+        // 도움 모드가 켜져 있을 때만 작동
+        if (!document.getElementById('help-toggle').checked) return;
+        
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            utterance.rate = 0.9; // 속도 살짝 늦춤
+            
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // === 3. UI 변경 및 모드 토글 ===
     function toggleMode() {
         const body = document.getElementById('app-body');
         const toggle = document.getElementById('help-toggle');
-        if (toggle.checked) body.classList.add('help-mode'); 
-        else body.classList.remove('help-mode'); 
+        const cartArea = document.getElementById('cart-area');
+
+        if (toggle.checked) {
+            body.classList.add('help-mode'); 
+            cartArea.classList.remove('unfriendly');
+            speak("도움 모드가 켜졌습니다. 큰 글씨와 음성 안내, 도움말이 제공됩니다.");
+        } else {
+            body.classList.remove('help-mode'); 
+            cartArea.classList.add('unfriendly');
+            window.speechSynthesis.cancel(); // 음성 즉시 중지
+        }
     }
 
-    function nextStep(stepId) {
+    // === 4. 화면 이동 ===
+    function goToStep(stepId, ttsMessage) {
+        // 모든 화면 숨기기
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
+        
+        // 선택한 화면 보이기
         document.getElementById(stepId).classList.add('active');
-    }
 
-    async function openCamera() {
-        nextStep('step-camera');
-        try {
-            cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            const videoElement = document.getElementById('camera-video');
-            videoElement.srcObject = cameraStream;
-        } catch (error) {
-            console.error("카메라 에러:", error);
-            alert("카메라를 사용할 수 없어 시뮬레이션 모드로 전환합니다.");
-            closeCamera(true);
-        }
-    }
-
-    function closeCamera(isSuccess) {
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
-        }
-        if (isSuccess) {
-            document.getElementById('coupon-badge').style.display = 'block';
-            nextStep('step-payment');
+        // 장바구니 영역은 1단계(메뉴 화면)에서만 보임
+        const cartArea = document.getElementById('cart-area');
+        if (stepId === 'step-menu' && totalItems > 0) {
+            cartArea.style.display = 'flex';
         } else {
-            nextStep('step-payment');
+            cartArea.style.display = 'none';
+        }
+
+        // 넘어갈 때 음성 안내 재생
+        if (ttsMessage) speak(ttsMessage);
+
+        // 결제 화면으로 이동할 때 최종 금액 표시 업데이트
+        if (stepId === 'step-payment') {
+            updateFinalPrice();
         }
     }
 
+    // === 5. 장바구니 로직 ===
+    function addToCart(itemName, price) {
+        totalItems++;
+        totalPrice += price;
+        updateCartUI();
+        speak(`${itemName}가 장바구니에 담겼습니다. 현재 총 ${totalPrice.toLocaleString()}원 입니다.`);
+    }
+
+    function resetCart() {
+        totalItems = 0;
+        totalPrice = 0;
+        discountApplied = false; // 할인 정보 초기화
+        updateCartUI();
+        speak("장바구니를 모두 비웠습니다. 메뉴를 다시 선택해 주세요.");
+    }
+
+    function updateCartUI() {
+        const cartArea = document.getElementById('cart-area');
+        
+        // 장바구니에 물건이 있으면 하단 영역 띄우기
+        if (totalItems > 0) {
+            cartArea.style.display = 'flex';
+        } else {
+            cartArea.style.display = 'none';
+        }
+
+        // 친화적 UI 업데이트
+        document.getElementById('cart-count-text').innerText = `총 ${totalItems}잔 담김`;
+        document.getElementById('cart-total-text').innerText = `${totalPrice.toLocaleString()}원`;
+
+        // 불친절한 UI 업데이트 (달러 표시 등 헷갈리게)
+        document.getElementById('cart-mini-text').innerText = `Cart(${totalItems}) $${(totalPrice/1000).toFixed(1)}`;
+    }
+
+    // === 6. 할인 적용 로직 (가상 카메라 스캔) ===
+    function applyDiscount() {
+        if (!discountApplied && totalPrice > discountAmount) { // 할인은 한 번만, 총액이 할인금액보다 클 때만 적용
+            discountApplied = true;
+             speak("바코드를 인식했습니다. 천 원 할인이 적용됩니다.");
+            
+            // 검은 화면 시뮬레이션: 글씨 변경 및 애니메이션 변경
+            const detectMsg = document.querySelector('.black-detect-msg');
+            detectMsg.innerText = "검은 화면 인식 완료! 할인 적용!";
+            detectMsg.style.color = "#ffca28";
+            document.querySelector('#camera-simulation .scan-line').style.animationPlayState = 'paused';
+
+            // 잠시 후 다음 단계로 이동
+            setTimeout(() => {
+                goToStep('step-option', '할인이 적용되었습니다! 최종 금액은 ' + (totalPrice - discountAmount).toLocaleString() + '원 입니다. 어디서 드실지 선택해 주세요.');
+            }, 1500);
+        } else if (discountApplied) {
+             speak("이미 할인이 적용되었습니다.");
+        } else if (totalPrice <= discountAmount) {
+             speak("할인을 적용할 수 없는 주문 금액입니다.");
+        }
+    }
+
+    function noDiscount() {
+        discountApplied = false;
+        // 도움 모드 OFF 상태를 고려한 TTS 메시지 분기 ( OFF일땐 빈 메시지 )
+        const ttsMessage = document.getElementById('help-toggle').checked ? '할인 적용 없이 주문을 계속합니다. 어디서 드실지 선택해 주세요.' : '';
+        goToStep('step-option', ttsMessage);
+    }
+
+    // === 7. 최종 금액 계산 및 표시 업데이트 ===
+    function updateFinalPrice() {
+        const finalPrice = discountApplied ? totalPrice - discountAmount : totalPrice;
+        const discountStatus = discountApplied ? '<span class="discount-applied-badge">천원 할인 적용됨</span>' : '';
+        document.getElementById('final-price-text').innerHTML = `최종 금액: ${discountStatus}${finalPrice.toLocaleString()}원`;
+    }
+
+    // === 8. 초기화 및 처음부터 다시 시작 ===
     function restart() {
-        document.getElementById('coupon-badge').style.display = 'none';
-        nextStep('step-menu');
+        totalItems = 0;
+        totalPrice = 0;
+        discountApplied = false; // 할인 정보 초기화
+        updateCartUI();
+        
+        // 가상 카메라 화면 초기화
+        const detectMsg = document.querySelector('.black-detect-msg');
+        detectMsg.innerText = "검은 화면 감지 대기 중";
+        detectMsg.style.color = "white";
+        document.querySelector('#camera-simulation .scan-line').style.animationPlayState = 'running';
+
+        goToStep('step-menu', '처음 화면으로 돌아왔습니다. 메뉴를 선택해 주세요.');
     }
 </script>
 
